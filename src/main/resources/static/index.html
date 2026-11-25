@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MailMind</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #0f0e17;
+      --paper:  #fffcf5;
+      --cream:  #f5f0e8;
+      --gold:   #c9a84c;
+      --gold2:  #e8c96b;
+      --muted:  #8a8070;
+      --border: #e0d8cc;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.13) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='0.035'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .header { text-align: center; }
+    .eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .eyebrow::before, .eyebrow::after {
+      content: ''; width: 36px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .eyebrow::after { transform: scaleX(-1); }
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 9vw, 62px);
+      font-weight: 700; line-height: 1.05; letter-spacing: -1px;
+    }
+    .header h1 em { font-style: italic; font-weight: 400; color: var(--gold); }
+    .header p { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 300; }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px 28px;
+      box-shadow: 0 1px 0 rgba(201,168,76,0.15), 0 20px 60px rgba(15,14,23,0.07);
+      display: flex; flex-direction: column; gap: 22px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 9px; }
+    .lbl {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lbl::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+
+    textarea {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--ink);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14.5px; font-weight: 400; line-height: 1.75;
+      padding: 16px 18px;
+      width: 100%; resize: vertical; min-height: 130px;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.2s;
+    }
+    textarea::placeholder { color: #b8ae9c; }
+    textarea:focus {
+      border-color: var(--gold); background: #fff;
+      box-shadow: 0 0 0 4px rgba(201,168,76,0.1);
+    }
+
+    .tone-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-label {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--cream);
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s; user-select: none;
+    }
+    .pill-label:hover { border-color: var(--gold); color: var(--ink); background: rgba(201,168,76,0.06); }
+    .pill-input { display: none; }
+    .pill-input:checked + .pill-label {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(232,201,107,0.08));
+      color: var(--ink); font-weight: 600;
+      box-shadow: 0 2px 8px rgba(201,168,76,0.2);
+    }
+
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+    .btn-generate {
+      width: 100%;
+      background: var(--ink); color: var(--paper);
+      border: none; border-radius: 10px;
+      padding: 15px 28px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px; font-weight: 600; letter-spacing: 0.03em;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .btn-generate::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.2), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .btn-generate:hover:not(:disabled)::before { opacity: 1; }
+    .btn-generate:hover:not(:disabled) {
+      background: #1a1828;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(15,14,23,0.22);
+    }
+    .btn-generate:active:not(:disabled) { transform: translateY(0); }
+    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,252,245,0.2); border-top-color: var(--paper);
+      border-radius: 50%; animation: spin 0.65s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-generate.loading .spinner { display: block; }
+    .btn-generate.loading .star { display: none; }
+    .hint { text-align: center; font-size: 12px; color: #b8ae9c; margin-top: -10px; }
+    .hint kbd { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+
+    .toast {
+      display: none; padding: 13px 18px; border-radius: 10px;
+      font-size: 13px; gap: 8px; align-items: center;
+    }
+    .toast.show { display: flex; background: #fff5f5; border: 1px solid #fecdca; color: #c0392b; }
+
+    .output-wrap {
+      display: none; flex-direction: column;
+      animation: riseUp 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    @keyframes riseUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .output-wrap.visible { display: flex; }
+    .output-top {
+      background: var(--ink); border-radius: 16px 16px 0 0;
+      padding: 13px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .output-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold2); display: flex; align-items: center; gap: 7px;
+    }
+    .output-label::before { content: '✦'; font-size: 10px; }
+    .output-actions { display: flex; gap: 6px; }
+    .btn-sm {
+      background: rgba(255,252,245,0.07); border: 1px solid rgba(255,252,245,0.12);
+      border-radius: 6px; color: rgba(255,252,245,0.55);
+      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
+      padding: 5px 11px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .btn-sm:hover { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold2); }
+    .btn-sm.copied { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.1); }
+    .output-body {
+      background: #fff; border: 1px solid var(--border); border-top: none;
+      border-radius: 0 0 16px 16px; padding: 26px 28px;
+      font-size: 14.5px; line-height: 1.8; color: var(--ink);
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    .footer { text-align: center; font-size: 12px; color: #c0b8aa; }
+    .footer span { color: var(--gold); }
+
+    @media(max-width:480px) {
+      .card { padding: 22px 18px; }
+      .output-body { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="header">
+    <div class="eyebrow">AI Powered</div>
+    <h1>Mail<em>Mind</em></h1>
+    <p>Craft the perfect email in seconds.</p>
+  </header>
+
+  <div class="card">
+
+    <div class="field">
+      <div class="lbl">Your Message</div>
+      <textarea id="emailContent" maxlength="1500"
+                placeholder="What do you want to say? e.g. Follow up with a client about the pending proposal sent last week..."></textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <div class="lbl">Tone</div>
+      <div class="tone-grid">
+        <input class="pill-input" type="radio" name="tone" id="t1" value="professional" checked/>
+        <label class="pill-label" for="t1">🎯 Professional</label>
+
+        <input class="pill-input" type="radio" name="tone" id="t2" value="friendly"/>
+        <label class="pill-label" for="t2">😊 Friendly</label>
+
+        <input class="pill-input" type="radio" name="tone" id="t3" value="formal"/>
+        <label class="pill-label" for="t3">📋 Formal</label>
+
+        <input class="pill-input" type="radio" name="tone" id="t4" value="casual"/>
+        <label class="pill-label" for="t4">💬 Casual</label>
+
+        <input class="pill-input" type="radio" name="tone" id="t5" value="persuasive"/>
+        <label class="pill-label" for="t5">🔥 Persuasive</label>
+
+        <input class="pill-input" type="radio" name="tone" id="t6" value="apologetic"/>
+        <label class="pill-label" for="t6">🙏 Apologetic</label>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn-generate" id="genBtn">
+      <div class="spinner"></div>
+      <span class="star">✦</span>
+      <span class="btn-text">Generate Email</span>
+    </button>
+
+    <p class="hint">or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></p>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="output-wrap" id="outputWrap">
+    <div class="output-top">
+      <div class="output-label">Generated Email</div>
+      <div class="output-actions">
+        <button class="btn-sm" id="copyBtn">📋 Copy</button>
+        <button class="btn-sm" id="redoBtn">🔄 Redo</button>
+        <button class="btn-sm" id="clearBtn">✕ Clear</button>
+      </div>
+    </div>
+    <div class="output-body" id="outputBody"></div>
+  </div>
+
+  <p class="footer">Powered by <span>MailMind AI</span> &nbsp;·&nbsp; localhost:8080</p>
+</div>
+
+<script>
+  const API = 'http://localhost:8080/api/email/generate';
+  let last = null;
+
+  const genBtn = document.getElementById('genBtn');
+  const outputWrap = document.getElementById('outputWrap');
+  const outputBody = document.getElementById('outputBody');
+  const toast = document.getElementById('toast');
+  const copyBtn = document.getElementById('copyBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const textarea = document.getElementById('emailContent');
+
+  textarea.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') generate(); });
+  genBtn.addEventListener('click', generate);
+  copyBtn.addEventListener('click', copyEmail);
+  redoBtn.addEventListener('click', () => { if (last) call(last); });
+  clearBtn.addEventListener('click', () => outputWrap.classList.remove('visible'));
+
+  function getSelectedTone() {
+    return document.querySelector('input[name="tone"]:checked')?.value || 'professional';
+  }
+
+  function generate() {
+    const content = textarea.value.trim();
+    if (!content) {
+      showToast('⚠ Please enter your message first.');
+      textarea.focus();
+      return;
+    }
+    last = { emailContent: content, tone: getSelectedTone() };
+    call(last);
+  }
+
+  async function call(payload) {
+    setLoading(true);
+    hideToast();
+    outputWrap.classList.remove('visible');
+
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+      const text = await res.text();
+
+      if (!text || text.trim() === "") throw new Error('No email in response.');
+
+      outputBody.textContent = text;
+      outputWrap.classList.add('visible');
+
+      setTimeout(() => outputWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+
+    } catch (err) {
+      showToast('⚠ ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setLoading(on) {
+    genBtn.disabled = on;
+    genBtn.classList.toggle('loading', on);
+    genBtn.querySelector('.btn-text').textContent = on ? 'Generating…' : 'Generate Email';
+  }
+
+  async function copyEmail() {
+    const text = outputBody.textContent;
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = '✓ Copied!';
+    copyBtn.classList.add('copied');
+    setTimeout(() => { copyBtn.textContent = '📋 Copy'; copyBtn.classList.remove('copied'); }, 2000);
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.className = 'toast show';
+    setTimeout(hideToast, 4000);
+  }
+
+  function hideToast() { toast.className = 'toast'; }
+</script>
+</body>
+</html>
